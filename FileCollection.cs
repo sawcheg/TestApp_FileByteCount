@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading;
 using IniFiles;
 using System.Xml.Linq;
+using System.Runtime.InteropServices;
 
 namespace TestApp_FileByteCount
 {
@@ -93,23 +94,17 @@ namespace TestApp_FileByteCount
             FileRecordForThread rec = (FileRecordForThread)file_record;
             try
             {
-                using (FileStream fs = new FileStream(rec.Path, FileMode.Open, FileAccess.Read))
-                {
-                    // imitation of long work (for test)
-                    // Thread.Sleep(rec.Sec_sleep);
-
-                    //Get number of Bytes in File.
-                    rec.CountByte = fs.Length;
-                    Console.WriteLine("Thread {0}: {1} bytes in file '{2}'.", rec.Number.ToString(), rec.CountByte.ToString(), rec.Path);
-                }
+                // imitation of long work (for test)
+                // Thread.Sleep(rec.Sec_sleep);                
+                rec.CalcBytesInFile();
+                Console.WriteLine("Thread {0}: {1} bytes in file '{2}'.", rec.Number.ToString(), rec.CountByte.ToString(), rec.Path);
             }
             catch (Exception e)
             {
                 Console.WriteLine("Error in Thread {0}: {1}.", rec.Number.ToString(), e.Message);
-                rec.CountByte = 0;
             }
             count_completed++;
-        }
+        }       
 
         private void ClearOldResultXML()
         {
@@ -127,7 +122,6 @@ namespace TestApp_FileByteCount
 
             foreach (FileRecordForThread fr in file_list)
             {
-
                 fileElement = new XElement("file");
                 fileAttr = new XAttribute("path", fr.Path);
                 byteElement = new XElement("ByteCount", fr.CountByte.ToString());

@@ -1,17 +1,28 @@
-﻿namespace TestApp_FileByteCount
+﻿using System.IO;
+
+namespace TestApp_FileByteCount
 {
     class FileRecordForThread
     {
         public string Path { get; }
         public int Number { get; }
         public int Sec_sleep { get; }
-        public long CountByte { get; set; }
+        private long countByte;
+        public long CountByte { get => countByte; }
 
         public FileRecordForThread(string path, int number, int sec_sleep)
         {
             Path = path;
             Number = number;
             Sec_sleep = sec_sleep;
-        }      
+            countByte = 0;
+        }
+
+        //Get number of Bytes in File.
+        public void CalcBytesInFile()
+        {
+            using (FileStream fs = new FileStream(Path, FileMode.Open, FileAccess.Read))
+                countByte = fs.Length;
+        }
     }
 }
