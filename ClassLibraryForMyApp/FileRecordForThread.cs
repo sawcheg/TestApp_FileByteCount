@@ -1,6 +1,7 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 
-namespace TestApp_FileByteCount
+namespace ClassLibraryForMyApp
 {
     class FileRecordForThread
     {

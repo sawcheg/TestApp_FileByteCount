@@ -2,67 +2,75 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using IniFiles;
 using System.Xml.Linq;
-using System.Runtime.InteropServices;
+using IniFiles;
 
-namespace TestApp_FileByteCount
+namespace ClassLibraryForMyApp
 {
-    class FileCollection
+    public class FileCollection
     {
-        List<FileRecordForThread> file_list;
-        string xml_file = Environment.CurrentDirectory + "\\Result.xml";
+        IniFile INI;
+        static List<FileRecordForThread> file_list;
         static int count_completed;
+        static ILog Log;
+        static string xml_file;
 
-        public FileCollection()
+        public FileCollection(ILog log)
         {
             file_list = new List<FileRecordForThread>();
+            INI = new IniFile(Environment.CurrentDirectory + "TestApp.ini");
+            Log = log;
         }
 
-        public void RunProcess()
+        public string GetDefaultDirectory(bool is_console = false)
         {
             string default_path, directory_path = "";
             bool old_path;
 
-            ClearOldResultXML();
-
-            IniFile INI = new IniFile("TestApp_FileByteCount.ini");
-            old_path = INI.KeyExists("Last_run", "path");
+            old_path = INI.KeyExists("path", "Last_run");
 
             if (old_path)
                 default_path = INI.ReadINI("Last_run", "path");
             else
                 default_path = Environment.CurrentDirectory;
 
-            Console.WriteLine("Введите путь к каталогу для подсчета суммы значений байт файлов... "
-                + Environment.NewLine + "Либо будет использован путь "
-                + (old_path ? " из предыдущего запуска " : "по умолчанию") + ":" + default_path); ;
-
-            while (directory_path.Length == 0)
+            if (is_console)
             {
-                directory_path = Console.ReadLine();
-                if (directory_path.Length == 0)
-                    directory_path = default_path;
-                else if (!Directory.Exists(directory_path))
-                {
-                    Console.WriteLine("Введенный путь к каталогу не существует. Повторить ввод (введите Y)? ");
-                    directory_path = "";
-                    if (Console.ReadKey().Key != ConsoleKey.Y)
-                        break;
-                }
-                else
-                    INI.Write("Last_run", "path", directory_path);
-            }
+                Console.WriteLine("Введите путь к каталогу для подсчета суммы значений байт файлов... "
+                    + Environment.NewLine + "Либо будет использован путь "
+                    + (old_path ? "из предыдущего запуска " : "по умолчанию") + ":" + default_path); ;
 
+                while (directory_path.Length == 0)
+                {
+                    directory_path = Console.ReadLine();
+                    if (directory_path.Length == 0)
+                        directory_path = default_path;
+                    else if (!Directory.Exists(directory_path))
+                    {
+                        Console.WriteLine("Введенный путь к каталогу не существует. Повторить ввод (введите Y)? ");
+                        directory_path = "";
+                        if (Console.ReadKey().Key != ConsoleKey.Y)
+                            break;
+                    }
+                }
+            }
+            else 
+                directory_path = default_path;
+
+            return directory_path;
+        }
+
+        public void RunProcess(string directory_path)
+        {
+            file_list.Clear();
             count_completed = 0;
+            xml_file = directory_path + "\\Result.xml";
+            ClearOldResultXML();     
 
             if (directory_path.Length > 0)
-                ProcessDirectory(directory_path);
-
-            // waiting for the process to complete
-            while (file_list.Count > count_completed)
-                Thread.Sleep(100);
-            SaveResultToXML();
+                ProcessDirectory(directory_path);           
+            
+            INI.Write("Last_run", "path", directory_path);
         }
 
         // Process all files in the directory passed in, recurse on any directories
@@ -97,13 +105,16 @@ namespace TestApp_FileByteCount
                 // imitation of long work (for test)
                 // Thread.Sleep(rec.Sec_sleep);                
                 rec.CalcBytesInFile();
-                Console.WriteLine("Thread {0}: {1} bytes in file '{2}'.", rec.Number.ToString(), rec.CountByte.ToString(), rec.Path);
+                Log.WriteLine(string.Format("Thread {0}: {1} bytes in file '{2}'.", rec.Number.ToString(), rec.CountByte.ToString(), rec.Path));
             }
             catch (Exception e)
             {
-                Console.WriteLine("Error in Thread {0}: {1}.", rec.Number.ToString(), e.Message);
+                Log.WriteLine(string.Format("Error in Thread {0}: {1}.", rec.Number.ToString(), e.Message));
             }
             count_completed++;
+
+            if (count_completed == file_list.Count)
+                FileCollection.SaveResultToXML();
         }       
 
         private void ClearOldResultXML()
@@ -112,7 +123,7 @@ namespace TestApp_FileByteCount
                 File.Delete(xml_file);
         }
 
-        private void SaveResultToXML()
+        static void SaveResultToXML()
         {
             XElement fileElement;
             XAttribute fileAttr;
@@ -131,8 +142,8 @@ namespace TestApp_FileByteCount
             }
             xdoc.Add(resultElement);
             xdoc.Save(xml_file);
-            Console.WriteLine();
-            Console.WriteLine("Файл результатов сохранен в файл: " + xml_file);
+            Log.WriteLine();
+            Log.WriteLine("Файл результатов сохранен в файл: " + xml_file);
         }
     }
 }
