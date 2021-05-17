@@ -48,7 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="TextBoxLog.cs" />
+    <Compile Include="FormMainLog.cs" />
     <Compile Include="FormMain.cs">
       <SubType>Form</SubType>
     </Compile>

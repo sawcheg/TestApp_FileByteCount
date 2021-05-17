@@ -11,7 +11,6 @@ namespace ClassLibraryForMyApp
     {
         IniFile INI;
         static List<FileRecordForThread> file_list;
-        static int count_completed;
         static ILog Log;
         static string xml_file;
 
@@ -63,13 +62,23 @@ namespace ClassLibraryForMyApp
         public void RunProcess(string directory_path)
         {
             file_list.Clear();
-            count_completed = 0;
             xml_file = directory_path + "\\Result.xml";
-            ClearOldResultXML();     
-
+            ClearOldResultXML();
             if (directory_path.Length > 0)
-                ProcessDirectory(directory_path);           
-            
+            {
+                Log.WriteLine("Идет подготовка списка файлов...");
+                ProcessDirectory(directory_path);
+                Log.WriteLine("Количество файлов в выбранном каталоге = " + file_list.Count.ToString());
+
+                foreach (FileRecordForThread frec in file_list)
+                {
+                    Thread t = new Thread(ProcessFile);
+                    t.IsBackground = true;
+                    t.Start(frec);
+                    t.Join();
+                }              
+            }
+            SaveResultToXML();
             INI.Write("Last_run", "path", directory_path);
         }
 
@@ -78,18 +87,11 @@ namespace ClassLibraryForMyApp
         private void ProcessDirectory(string targetDirectory)
         {
             Random waitTime = new Random();
-            int seconds;
-            FileRecordForThread frec;
             // Process the list of files found in the directory.
             string[] fileEntries = Directory.GetFiles(targetDirectory);
             foreach (string fileName in fileEntries)
-            {
-                seconds = waitTime.Next(1 * 1000, 11 * 1000);
-                Thread t = new Thread(ProcessFile);
-                frec = new FileRecordForThread(fileName, file_list.Count + 1, seconds);
-                file_list.Add(frec);
-                t.Start(frec);
-            }
+                file_list.Add(new FileRecordForThread(fileName, file_list.Count + 1, waitTime.Next(1 * 1000, 11 * 1000)));
+
             // Recurse into subdirectories of this directory.
             string[] subdirectoryEntries = Directory.GetDirectories(targetDirectory);
             foreach (string subdirectory in subdirectoryEntries)
@@ -102,7 +104,7 @@ namespace ClassLibraryForMyApp
             FileRecordForThread rec = (FileRecordForThread)file_record;
             try
             {
-                // imitation of long work (for test)
+                // imitation of long work (for test)  
                 // Thread.Sleep(rec.Sec_sleep);                
                 rec.CalcBytesInFile();
                 Log.WriteLine(string.Format("Thread {0}: {1} bytes in file '{2}'.", rec.Number.ToString(), rec.CountByte.ToString(), rec.Path));
@@ -111,10 +113,7 @@ namespace ClassLibraryForMyApp
             {
                 Log.WriteLine(string.Format("Error in Thread {0}: {1}.", rec.Number.ToString(), e.Message));
             }
-            count_completed++;
-
-            if (count_completed == file_list.Count)
-                FileCollection.SaveResultToXML();
+            
         }       
 
         private void ClearOldResultXML()
@@ -123,7 +122,7 @@ namespace ClassLibraryForMyApp
                 File.Delete(xml_file);
         }
 
-        static void SaveResultToXML()
+        private void SaveResultToXML()
         {
             XElement fileElement;
             XAttribute fileAttr;

@@ -23,7 +23,7 @@ namespace ClassLibraryForMyApp
         public void CalcBytesInFile()
         {
             using (FileStream fs = new FileStream(Path, FileMode.Open, FileAccess.Read))
-                countByte = fs.Length;
+              countByte = fs.Length;
         }
     }
 }

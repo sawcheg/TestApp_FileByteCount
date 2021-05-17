@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using ClassLibraryForMyApp;
 using System.Windows.Forms;
 
@@ -15,11 +16,7 @@ namespace WinFormTestApp_FileByteCount
 
         public void WriteLine(string value)
         {
-            form.Invoke((MethodInvoker)delegate {
-                // Running on the UI thread
-                form.AddLogItemMethod(value);
-            });
-
+            form.Invoke(form.myDelegate, new Object[] { value });
         }
     }
 }
