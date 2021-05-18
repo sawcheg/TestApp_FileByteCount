@@ -4,46 +4,49 @@ using System.Text;
 
 namespace IniFiles
 {
+    /// <summary>
+    /// Class for handling INI-files
+    /// </summary>
     class IniFile
     {
-        string Path; //Имя файла.
+        string Path; //File name.
 
-        [DllImport("kernel32")] // Подключаем kernel32.dll и описываем его функцию WritePrivateProfilesString
+        [DllImport("kernel32")] // Include kernel32.dll and describe its function WritePrivateProfilesString
         static extern long WritePrivateProfileString(string Section, string Key, string Value, string FilePath);
 
-        [DllImport("kernel32")] // Еще раз подключаем kernel32.dll, а теперь описываем функцию GetPrivateProfileString
+        [DllImport("kernel32")] // Connect kernel32.dll again, and now describe the function GetPrivateProfileString
         static extern int GetPrivateProfileString(string Section, string Key, string Default, StringBuilder RetVal, int Size, string FilePath);
 
-        // С помощью конструктора записываем пусть до файла и его имя.
+        // Using the constructor, write down to the file and its name.
         public IniFile(string IniPath)
         {
             Path = new FileInfo(IniPath).FullName.ToString();
         }
 
-        //Читаем ini-файл и возвращаем значение указного ключа из заданной секции.
+        //Read the ini file and return the value of the specified key from the specified section.
         public string ReadINI(string Section, string Key)
         {
             var RetVal = new StringBuilder(255);
             GetPrivateProfileString(Section, Key, "", RetVal, 255, Path);
             return RetVal.ToString();
         }
-        //Записываем в ini-файл. Запись происходит в выбранную секцию в выбранный ключ.
+        //Write to the ini file. Recording takes place in the selected section in the selected key.
         public void Write(string Section, string Key, string Value)
         {
             WritePrivateProfileString(Section, Key, Value, Path);
         }
 
-        //Удаляем ключ из выбранной секции.
+        //Remove the key from the selected section.
         public void DeleteKey(string Key, string Section = null)
         {
             Write(Section, Key, null);
         }
-        //Удаляем выбранную секцию
+        //Delete the selected section
         public void DeleteSection(string Section = null)
         {
             Write(Section, null, null);
         }
-        //Проверяем, есть ли такой ключ, в этой секции
+        //Check if there is such a key in this section
         public bool KeyExists(string Key, string Section = null)
         {
             return ReadINI(Section, Key).Length > 0;

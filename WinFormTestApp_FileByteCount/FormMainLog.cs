@@ -5,6 +5,9 @@ using System.Windows.Forms;
 
 namespace WinFormTestApp_FileByteCount
 {
+    /// <summary>
+    /// Interface implementation for Console
+    /// </summary>
     class FormMainLog : ILog
     {
         FormMain form;
@@ -16,6 +19,7 @@ namespace WinFormTestApp_FileByteCount
 
         public void WriteLine(string value)
         {
+            //running on the mainForm thread
             form.Invoke(form.myDelegate, new Object[] { value });
         }
     }
