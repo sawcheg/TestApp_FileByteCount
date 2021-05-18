@@ -89,13 +89,13 @@ namespace ClassLibraryForMyApp
         {
             dtStart = DateTime.Now;
             file_list.Clear();
-            xml_file = directory_path + "\\Result.xml";
+            xml_file = directory_path + @"\Result.xml";
             ClearOldResultXML();
             if (directory_path.Length > 0)
             {
-                Log.WriteLine(is_en_culture ? "The file list is being prepared ...":"Идет подготовка списка файлов...");
+                Log.WriteLine(is_en_culture ? "The file list is being prepared...":"Идет подготовка списка файлов...");
                 ProcessDirectory(directory_path);
-                Log.WriteLine(is_en_culture ? "Number of files in the selected directory =" : "Количество файлов в выбранном каталоге = " + file_list.Count.ToString());
+                Log.WriteLine((is_en_culture ? "Number of files in the selected directory = " : "Количество файлов в выбранном каталоге = ") + file_list.Count.ToString());
 
                 m_remain = file_list.Count;
                 m_event = new ManualResetEvent(false);
@@ -104,7 +104,7 @@ namespace ClassLibraryForMyApp
                 m_event.WaitOne();
             }
             SaveResultToXML();
-            Log.WriteLine(is_en_culture ? "Execution time, sec" : "Время выполнения, с: " + (DateTime.Now - dtStart).TotalSeconds);
+            Log.WriteLine((is_en_culture ? "Execution time, sec: " : "Время выполнения, с: ") + (DateTime.Now - dtStart).TotalSeconds);
             INI.Write("Last_run", "path", directory_path);
         }
 
@@ -146,8 +146,8 @@ namespace ClassLibraryForMyApp
             }
             catch (Exception e)
             {
-                Log.WriteLine(string.Format(is_en_culture ? "Error in Thread {0}: {1}." 
-                    : "Ошибка в потоке {0}: {1}.", rec.Number.ToString(), e.Message));
+                Log.WriteLine(string.Format((is_en_culture ? "Error in Thread {0}: {1}." 
+                    : "Ошибка в потоке {0}: {1}."), rec.Number.ToString(), e.Message));
             }
             if (Interlocked.Decrement(ref m_remain) == 0)
                 m_event.Set();
@@ -185,7 +185,7 @@ namespace ClassLibraryForMyApp
             xdoc.Add(resultElement);
             xdoc.Save(xml_file);
             Log.WriteLine();
-            Log.WriteLine(is_en_culture ? "Results file saved to file: " : "Файл результатов сохранен в файл: " + xml_file);
+            Log.WriteLine((is_en_culture ? "Results file saved to file: " : "Файл результатов сохранен в файл: ") + xml_file);
         }
     }
 }

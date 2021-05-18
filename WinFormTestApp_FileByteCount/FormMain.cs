@@ -2,7 +2,6 @@
 using System.Windows.Forms;
 using ClassLibraryForMyApp;
 using System.IO;
-using System.Collections.Generic;
 using System.Threading;
 
 namespace WinFormTestApp_FileByteCount

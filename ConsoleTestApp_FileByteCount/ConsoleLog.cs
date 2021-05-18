@@ -1,12 +1,12 @@
 ﻿using System;
 using ClassLibraryForMyApp;
 
-namespace ClassLibraryForMyApp
+namespace TestApp_FileByteCount
 {
     /// <summary>
     /// Interface implementation for Console
     /// </summary>
-    class ConsoleLog : ILog
+    public class ConsoleLog : ILog
     {
         public void WriteLine(string value)
         {

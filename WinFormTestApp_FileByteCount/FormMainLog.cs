@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Threading;
 using ClassLibraryForMyApp;
-using System.Windows.Forms;
 
 namespace WinFormTestApp_FileByteCount
 {

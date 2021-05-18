@@ -25,5 +25,6 @@ namespace TestApp_FileByteCount
             Console.WriteLine(is_en_culture ? "Press the key to exit..." : "Нажмите клавишу для завершения...");
             Console.Read();
         }
+        
     }
 }
